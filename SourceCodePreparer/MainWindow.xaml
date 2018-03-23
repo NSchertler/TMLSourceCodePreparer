@@ -1,0 +1,51 @@
+﻿<Window x:Class="SourceCodePreparer.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:SourceCodePreparer"
+        mc:Ignorable="d"
+        Title="TML Source Code Preparer" Width="525" SizeToContent="Height" Icon="Resources/icon.ico">
+    <Window.DataContext>
+        <local:MainViewModel/>
+    </Window.DataContext>
+    <Window.Resources>
+        <local:EnumBooleanConverter x:Key="enumConv"/>
+        <local:HierarchicalNumberConverter x:Key="hnConv"/>
+    </Window.Resources>
+    <Grid>
+        <StackPanel Margin="8">
+            <TextBlock>1. Select the folder with the source files:</TextBlock>
+            <DockPanel>
+                <Button DockPanel.Dock="Right" Margin="4,0,0,0" Padding="4,0,4,0" Click="ChooseSourceFolder">...</Button>
+                <TextBox Text="{Binding SourceFolder}"/>
+            </DockPanel>
+
+            <TextBlock Margin="0,8,0,0">2. Choose the file extensions to process:</TextBlock>
+            <TextBox Text="{Binding Filter}"/>
+
+            <TextBlock Margin="0,8,0,0">3. Select the operation to perform:</TextBlock>
+            <RadioButton IsChecked="{Binding OutputType, Converter={StaticResource enumConv}, ConverterParameter=TMLWithActiveStudentVersion}">In-Place transformation with active student version</RadioButton>
+            <RadioButton IsChecked="{Binding OutputType, Converter={StaticResource enumConv}, ConverterParameter=TMLWithActiveSolution}">In-Place transformation with active solution</RadioButton>
+            <RadioButton IsChecked="{Binding OutputType, Converter={StaticResource enumConv}, ConverterParameter=StudentVersion}">Create student version</RadioButton>
+            <RadioButton IsChecked="{Binding OutputType, Converter={StaticResource enumConv}, ConverterParameter=Solution}">Create solution</RadioButton>
+
+            <TextBlock Margin="0,8,0,0">3.1. Solutions only up to task:</TextBlock>
+            <TextBox Text="{Binding UpToTask, Converter={StaticResource hnConv}}"/>
+
+            <TextBlock Margin="0,8,0,0">4. Choose an output directory:</TextBlock>
+            <DockPanel>
+                <Button DockPanel.Dock="Right" Margin="4,0,0,0" Padding="4,0,4,0" Click="ChooseTargetFolder"  IsEnabled="{Binding TargetFolderActive}">...</Button>
+                <TextBox Text="{Binding TargetFolder}" IsEnabled="{Binding TargetFolderActive}"/>
+            </DockPanel>
+            <CheckBox Margin="-1,0,0,0" IsChecked="{Binding OnlyTransformedFiles}" IsEnabled="{Binding TargetFolderActive}">Only transformed files in output</CheckBox>
+            
+            <Button Click="Transform" Margin="0,8,0,0">Start Transformation</Button>
+            <DockPanel Margin="0,4,0,0">
+                <Button DockPanel.Dock="Right" Margin="4,0,0,0" Padding="4,0,4,0" Click="GotoBackupFolder" ToolTip="Open in Explorer">...</Button>
+                <TextBlock Text="{Binding BackupFolder, StringFormat='Backup folder: {0}'}" ToolTip="{Binding BackupFolder}"/>
+            </DockPanel>
+            
+        </StackPanel>
+    </Grid>
+</Window>

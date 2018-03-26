@@ -12,35 +12,49 @@
     <Window.Resources>
         <local:EnumBooleanConverter x:Key="enumConv"/>
         <local:HierarchicalNumberConverter x:Key="hnConv"/>
+        <Style TargetType="GroupBox">
+            <Setter Property="Margin" Value="0,0,0,8"/>
+            <Setter Property="Padding" Value="4"/>
+        </Style>
     </Window.Resources>
     <Grid>
         <StackPanel Margin="8">
-            <TextBlock>1. Select the folder with the source files:</TextBlock>
-            <DockPanel>
-                <Button DockPanel.Dock="Right" Margin="4,0,0,0" Padding="4,0,4,0" Click="ChooseSourceFolder">...</Button>
-                <TextBox Text="{Binding SourceFolder}"/>
-            </DockPanel>
+            <GroupBox Header="1. Select the folder with the source files:">
+                <DockPanel>
+                    <Button DockPanel.Dock="Right" Margin="4,0,0,0" Padding="4,0,4,0" Click="ChooseSourceFolder">...</Button>
+                    <TextBox Text="{Binding SourceFolder}"/>
+                </DockPanel>
+            </GroupBox>
 
-            <TextBlock Margin="0,8,0,0">2. Choose the file extensions to process:</TextBlock>
-            <TextBox Text="{Binding Filter}"/>
 
-            <TextBlock Margin="0,8,0,0">3. Select the operation to perform:</TextBlock>
-            <RadioButton IsChecked="{Binding OutputType, Converter={StaticResource enumConv}, ConverterParameter=TMLWithActiveStudentVersion}">In-Place transformation with active student version</RadioButton>
-            <RadioButton IsChecked="{Binding OutputType, Converter={StaticResource enumConv}, ConverterParameter=TMLWithActiveSolution}">In-Place transformation with active solution</RadioButton>
-            <RadioButton IsChecked="{Binding OutputType, Converter={StaticResource enumConv}, ConverterParameter=StudentVersion}">Create student version</RadioButton>
-            <RadioButton IsChecked="{Binding OutputType, Converter={StaticResource enumConv}, ConverterParameter=Solution}">Create solution</RadioButton>
+            <GroupBox Header="2. Choose the file extensions to process:">
+                <TextBox Text="{Binding Filter}"/>
+            </GroupBox>
 
-            <TextBlock Margin="0,8,0,0">3.1. Solutions only up to task:</TextBlock>
-            <TextBox Text="{Binding UpToTask, Converter={StaticResource hnConv}}"/>
+            <GroupBox Header="3. Select the operation to perform:">
+                <StackPanel>
+                    <RadioButton IsChecked="{Binding OutputType, Converter={StaticResource enumConv}, ConverterParameter=TMLWithActiveStudentVersion}">In-Place transformation with active student version</RadioButton>
+                    <RadioButton IsChecked="{Binding OutputType, Converter={StaticResource enumConv}, ConverterParameter=TMLWithActiveSolution}">In-Place transformation with active solution</RadioButton>
+                    <RadioButton IsChecked="{Binding OutputType, Converter={StaticResource enumConv}, ConverterParameter=StudentVersion}">Create student version</RadioButton>
+                    <RadioButton IsChecked="{Binding OutputType, Converter={StaticResource enumConv}, ConverterParameter=Solution}">Create solution</RadioButton>
+                    <CheckBox IsChecked="{Binding UseSpecialSolution}" Margin="-1,0,0,0">Use special solution if available</CheckBox>
 
-            <TextBlock Margin="0,8,0,0">4. Choose an output directory:</TextBlock>
-            <DockPanel>
-                <Button DockPanel.Dock="Right" Margin="4,0,0,0" Padding="4,0,4,0" Click="ChooseTargetFolder"  IsEnabled="{Binding TargetFolderActive}">...</Button>
-                <TextBox Text="{Binding TargetFolder}" IsEnabled="{Binding TargetFolderActive}"/>
-            </DockPanel>
-            <CheckBox Margin="-1,0,0,0" IsChecked="{Binding OnlyTransformedFiles}" IsEnabled="{Binding TargetFolderActive}">Only transformed files in output</CheckBox>
-            
-            <Button Click="Transform" Margin="0,8,0,0">Start Transformation</Button>
+                    <TextBlock Margin="0,8,0,0">Solutions only up to task:</TextBlock>
+                    <TextBox Text="{Binding UpToTask, Converter={StaticResource hnConv}}"/>
+                </StackPanel>
+            </GroupBox>
+
+            <GroupBox Header="4. Choose an output directory:" IsEnabled="{Binding TargetFolderActive}">
+                <StackPanel>
+                    <DockPanel>
+                        <Button DockPanel.Dock="Right" Margin="4,0,0,0" Padding="4,0,4,0" Click="ChooseTargetFolder"  IsEnabled="{Binding TargetFolderActive}">...</Button>
+                        <TextBox Text="{Binding TargetFolder}"/>
+                    </DockPanel>
+                    <CheckBox Margin="-1,0,0,0" IsChecked="{Binding OnlyTransformedFiles}">Only transformed files in output</CheckBox>
+                </StackPanel>
+            </GroupBox>
+
+            <Button Click="Transform">Start Transformation</Button>
             <DockPanel Margin="0,4,0,0">
                 <Button DockPanel.Dock="Right" Margin="4,0,0,0" Padding="4,0,4,0" Click="GotoBackupFolder" ToolTip="Open in Explorer">...</Button>
                 <TextBlock Text="{Binding BackupFolder, StringFormat='Backup folder: {0}'}" ToolTip="{Binding BackupFolder}"/>

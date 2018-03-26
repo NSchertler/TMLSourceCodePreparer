@@ -65,7 +65,9 @@
     </ApplicationDefinition>
     <Compile Include="EnumBooleanConverter.cs" />
     <Compile Include="FolderTransformer.cs" />
+    <Compile Include="HierarchicalNumber.cs" />
     <Compile Include="HierarchicalNumberConverter.cs" />
+    <Compile Include="SubSnippetAttribute.cs" />
     <Compile Include="TMLDocument.cs" />
     <Compile Include="TMLSyntaxTree.cs" />
     <Page Include="MainWindow.xaml">

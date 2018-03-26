@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -14,68 +15,26 @@ namespace SourceCodePreparer
         StudentVersion,
         TMLWithActiveSolution,
         TMLWithActiveStudentVersion
-    }
-
-    public struct HierarchicalNumber
-    {
-        public int Major { get; private set; }
-        public int? Minor { get; private set; }
-        public int? SubMinor { get; private set; }
-
-        public HierarchicalNumber(int major)
-        {
-            Major = major;
-            Minor = SubMinor = null;
-        }
-
-        public HierarchicalNumber(int major, int? minor)
-        {
-            Major = major;
-            Minor = minor;
-            SubMinor = null;
-        }
-
-        public HierarchicalNumber(int major, int? minor, int? subminor)
-        {
-            Major = major;
-            Minor = minor;
-            SubMinor = subminor;
-        }
-
-        public override string ToString()
-        {
-            if (!Minor.HasValue && !SubMinor.HasValue)
-                return Major.ToString();
-            else if (!SubMinor.HasValue)
-                return Major.ToString() + "." + Minor.ToString();
-            else
-                return Major.ToString() + "." + Minor.ToString() + "." + SubMinor.ToString();
-        }
-
-        public static HierarchicalNumber ParseFromString(string input)
-        {
-            var regex = new Regex(@"(?<major>\d)(\.(?<minor>\d)(\.(?<subminor>\d))?)?");
-            var matches = regex.Matches(input);
-            if (matches.Count != 1)
-                throw new FormatException($"Cannot parse hierarchical number from \"{input}\"");
-            int major = int.Parse(matches[0].Groups["major"].Value);
-
-            var minorCapture = matches[0].Groups["minor"];
-            int? minor = null;
-            if(minorCapture.Success)
-                minor = int.Parse(minorCapture.Value);
-
-            var subminorCapture = matches[0].Groups["subminor"];
-            int? subminor = null;
-            if(subminorCapture.Success)
-                subminor = int.Parse(subminorCapture.Value);
-
-            return new HierarchicalNumber(major, minor, subminor);
-        }
-    }
+    }    
 
     public class TMLDocument
-    {        
+    {
+        static Dictionary<PropertyInfo, SubSnippetAttribute> subsnippets = new Dictionary<PropertyInfo, SubSnippetAttribute>();
+        static HashSet<string> subsnippetTags = new HashSet<string>();
+        static TMLDocument()
+        {
+            
+            foreach (var prop in typeof(SnippetNode).GetProperties(BindingFlags.Public | BindingFlags.Instance))
+            {
+                var attr = prop.GetCustomAttribute<SubSnippetAttribute>();
+                if (attr != null)
+                {
+                    subsnippets.Add(prop, attr);
+                    subsnippetTags.Add(attr.TagName);
+                }
+            }
+        }                        
+
         private string text;
         private TMLSyntaxTree syntaxTree;
 
@@ -99,23 +58,23 @@ namespace SourceCodePreparer
             return nodes.Where(n => n is SnippetNode).Select(n => (SnippetNode)n).Where(n => n.IsInTask(task)).Count();
         }
         
-        public void TransformDocument(Stream output, TMLOutputType type, HierarchicalNumber? solutionsUpToTask)
+        public void TransformDocument(Stream output, TMLOutputType type, HierarchicalNumber? solutionsUpToTask, bool useSpecialSolution = false)
         {
             using (var str = new StreamWriter(output, Encoding.UTF8, 0x8000, true))
-                TransformDocument(str, type, solutionsUpToTask);
+                TransformDocument(str, type, solutionsUpToTask, useSpecialSolution);
         }
 
-        public void TransformDocument(StreamWriter output, TMLOutputType type, HierarchicalNumber? solutionsUpToTask)
+        public void TransformDocument(StreamWriter output, TMLOutputType type, HierarchicalNumber? solutionsUpToTask, bool useSpecialSolution = false)
         {
             foreach (var node in nodes)
             {
-                node.Print(output, text, type, solutionsUpToTask);
+                node.Print(output, text, type, solutionsUpToTask, useSpecialSolution);
             }
         }
 
         private abstract class SemanticNode
         {
-            public abstract void Print(StreamWriter output, string originalDocument, TMLOutputType type, HierarchicalNumber? solutionsUpToTask);
+            public abstract void Print(StreamWriter output, string originalDocument, TMLOutputType type, HierarchicalNumber? solutionsUpToTask, bool useSpecialSolution = false);
         }
 
         private class TextNode : SemanticNode
@@ -127,7 +86,7 @@ namespace SourceCodePreparer
                 this.Content = content;
             }
 
-            public override void Print(StreamWriter output, string originalDocument, TMLOutputType type, HierarchicalNumber? solutionsUpToTask)
+            public override void Print(StreamWriter output, string originalDocument, TMLOutputType type, HierarchicalNumber? solutionsUpToTask, bool useSpecialSolution)
             {
                 output.Write(originalDocument.Substring(Content.BeginIndex, Content.Length));
             }
@@ -136,8 +95,29 @@ namespace SourceCodePreparer
 
         private class SnippetNode : SemanticNode
         {
+            [SubSnippet("student")]
             public Snippet StudentContent { get; set; }
+
+            [SubSnippet("solution")]
             public Snippet SolutionContent { get; set; }
+
+            [SubSnippet("specialsolution")]
+            public Snippet SpecialSolutionContent { get; set; }
+
+            public bool HasAtMostOneActiveSubSnippet
+            {
+                get
+                {
+                    int activeSnippets = 0;
+                    foreach (var subsnippet in subsnippets)
+                    {
+                        var value = (Snippet)subsnippet.Key.GetValue(this);
+                        if (value != null && value.HasUncommentedLines)
+                            ++activeSnippets;
+                    }                    
+                    return activeSnippets <= 1;
+                }
+            }
 
             public string Indentation { get; set; }
 
@@ -191,11 +171,14 @@ namespace SourceCodePreparer
                 return true;
             }
 
-            public override void Print(StreamWriter output, string originalDocument, TMLOutputType type, HierarchicalNumber? solutionsUpToTask)
+            public override void Print(StreamWriter output, string originalDocument, TMLOutputType type, HierarchicalNumber? solutionsUpToTask, bool useSpecialSolution)
             {
                 var printAll = type == TMLOutputType.TMLWithActiveSolution || type == TMLOutputType.TMLWithActiveStudentVersion;
 
                 bool solutionIsActive = (type == TMLOutputType.TMLWithActiveSolution || type == TMLOutputType.Solution) && IsInOrBeforeTask(solutionsUpToTask);
+                bool specialSolutionIsActive = SpecialSolutionContent != null && useSpecialSolution && solutionIsActive;
+                if (specialSolutionIsActive)
+                    solutionIsActive = false;
 
                 if (printAll)
                 {
@@ -212,10 +195,10 @@ namespace SourceCodePreparer
                     }
                 }
 
-                if (!solutionIsActive || printAll)
+                if (!(solutionIsActive || specialSolutionIsActive) || printAll)
                 {
                     if (StudentContent != null)
-                        StudentContent.Print(output, printUncommented: !solutionIsActive);
+                        StudentContent.Print(output, printUncommented: !(solutionIsActive || specialSolutionIsActive), indentation: Indentation);
                 }
 
                 if (printAll)
@@ -237,7 +220,7 @@ namespace SourceCodePreparer
                 if (solutionIsActive || printAll)
                 {
                     if(SolutionContent != null)
-                        SolutionContent.Print(output, printUncommented: solutionIsActive);
+                        SolutionContent.Print(output, printUncommented: solutionIsActive, indentation: Indentation);
                 }
 
                 if (printAll)
@@ -247,6 +230,28 @@ namespace SourceCodePreparer
                         output.WriteLine();
                         output.Write(Indentation);
                         output.WriteLine("//</solution>");
+                    }
+                    if (SpecialSolutionContent != null)
+                    {
+                        output.Write(Indentation);
+                        output.WriteLine("//<specialsolution>");
+                        output.Write(Indentation);
+                    }
+                }
+
+                if (specialSolutionIsActive || printAll)
+                {
+                    if (SpecialSolutionContent != null)
+                        SpecialSolutionContent.Print(output, printUncommented: specialSolutionIsActive, indentation: Indentation);
+                }
+
+                if (printAll)
+                {
+                    if (SpecialSolutionContent != null)
+                    {
+                        output.WriteLine();
+                        output.Write(Indentation);
+                        output.WriteLine("//</specialsolution>");
                     }
                     output.Write(Indentation);
                     output.Write("//</snippet>");
@@ -279,26 +284,42 @@ namespace SourceCodePreparer
             public Snippet()
             { }
 
-            public void Print(StreamWriter output, bool printUncommented)
+            public void Print(StreamWriter output, bool printUncommented, string indentation)
             {
                 bool addComments = !printUncommented && HasUncommentedLines;
                 bool removeComments = !HasUncommentedLines && printUncommented;
 
                 for (int i = 0; i < lines.Length; ++i)
-                {
-                    output.Write(lines[i].Substring(0, firstNonWhiteSpace[i]));
-                    if (firstNonWhiteSpace[i] == lines[i].Length)
-                        continue;
+                {                    
                     if (addComments)
-                        output.Write("//");
-                    if (removeComments)
                     {
-                        if (firstNonWhiteSpace[i] > lines[i].Length - 2 || lines[i].Substring(firstNonWhiteSpace[i], 2) != "//")
-                            throw new FormatException("Cannot remove comment from line \"" + lines[i] + "\".");
-                        output.Write(lines[i].Substring(firstNonWhiteSpace[i] + 2));
+                        if (lines[i].StartsWith(indentation))
+                        {
+                            output.Write(indentation);
+                            output.Write("//");
+                            output.Write(lines[i].Substring(indentation.Length, firstNonWhiteSpace[i] - indentation.Length));
+                        }
+                        else
+                        {
+                            output.Write(lines[i].Substring(0, firstNonWhiteSpace[i]));
+                            output.Write("//");
+                        }
                     }
                     else
-                        output.Write(lines[i].Substring(firstNonWhiteSpace[i]));
+                        output.Write(lines[i].Substring(0, firstNonWhiteSpace[i]));
+
+                    if (firstNonWhiteSpace[i] != lines[i].Length)
+                    {
+                        if (removeComments)
+                        {
+                            if (firstNonWhiteSpace[i] > lines[i].Length - 2 || lines[i].Substring(firstNonWhiteSpace[i], 2) != "//")
+                                throw new FormatException("Cannot remove comment from line \"" + lines[i] + "\".");
+                            output.Write(lines[i].Substring(firstNonWhiteSpace[i] + 2));
+                        }
+                        else
+                            output.Write(lines[i].Substring(firstNonWhiteSpace[i]));
+                    }
+
                     if (i != lines.Length - 1)
                         output.WriteLine();
                 }
@@ -341,15 +362,16 @@ namespace SourceCodePreparer
                         }
                     }
 
-                    snippetNode.SolutionContent = FindSubSnippet(tagNode, "solution");
-                    snippetNode.StudentContent = FindSubSnippet(tagNode, "student");
+                    //Assign the existing subsnippets
+                    foreach (var subsnippet in subsnippets)
+                        subsnippet.Key.SetValue(snippetNode, FindSubSnippet(tagNode, subsnippet.Value.TagName));
 
                     //Check if there are invalid subtags
-                    if (tagNode.InnerNodes.Where(n => n is TMLTagNode).Select(n => (TMLTagNode)n).Where(n => n.TagName != "solution" && n.TagName != "student").Count() > 0)
-                        throw new FormatException("The snippet tag may only contain solution or student subtags.");
+                    if (tagNode.InnerNodes.Where(n => n is TMLTagNode).Select(n => (TMLTagNode)n).Any(n => !subsnippetTags.Contains(n.TagName)))
+                        throw new FormatException("The snippet tag contains invalid subtags.");
 
-                    if (snippetNode.SolutionContent != null && snippetNode.SolutionContent.HasUncommentedLines && snippetNode.StudentContent != null && snippetNode.StudentContent.HasUncommentedLines)                        
-                        throw new FormatException("Cannot determine if the snippet has an active solution or student version. Both have uncommented lines.");
+                    if (!snippetNode.HasAtMostOneActiveSubSnippet)
+                        throw new FormatException("More than one subsnippet have uncommented lines.");
 
                     nodes.Add(snippetNode);
                 }

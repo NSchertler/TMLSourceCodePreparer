@@ -64,7 +64,7 @@ namespace SourceCodePreparer
         {
             try
             {
-                transformer.TransformFolder(vm.SourceFolder, vm.OutputType, vm.Filter, vm.TargetFolder, vm.UpToTask, vm.OnlyTransformedFiles);
+                transformer.TransformFolder(vm.SourceFolder, vm.OutputType, vm.Filter, vm.TargetFolder, vm.UpToTask, vm.OnlyTransformedFiles, vm.UseSpecialSolution);
                 MessageBox.Show("Folder transformation complete", "Folder Transformation", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             catch(Exception x)
@@ -158,6 +158,13 @@ namespace SourceCodePreparer
         {
             get => onlyTransformedFiles;
             set => SetField(ref onlyTransformedFiles, value);
+        }
+
+        bool useSpecialSolution;
+        public bool UseSpecialSolution
+        {
+            get => useSpecialSolution;
+            set => SetField(ref useSpecialSolution, value);
         }
     }
 }

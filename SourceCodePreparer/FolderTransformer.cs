@@ -19,7 +19,7 @@ namespace SourceCodePreparer
             Directory.CreateDirectory(BackupFolder);
         }
 
-        public void TransformFolder(string folder, TMLOutputType outputType, string filter, string externalFolder, HierarchicalNumber? upToTask, bool onlyTransformedFiles)
+        public void TransformFolder(string folder, TMLOutputType outputType, string filter, string externalFolder, HierarchicalNumber? upToTask, bool onlyTransformedFiles, bool useSpecialSolution)
         {
             if (folder == null)
                 throw new NullReferenceException("No input folder is provided for transformation.");
@@ -64,7 +64,7 @@ namespace SourceCodePreparer
                 {
                     try
                     {
-                        transformed = TransformFile(inputFile, outputType, targetFilename, upToTask);
+                        transformed = TransformFile(inputFile, outputType, targetFilename, upToTask, useSpecialSolution);
                     }
                     catch(Exception x)
                     {
@@ -77,7 +77,7 @@ namespace SourceCodePreparer
             }
         }
 
-        bool TransformFile(FileInfo file, TMLOutputType outputType, string targetFilename, HierarchicalNumber? upToTask)
+        bool TransformFile(FileInfo file, TMLOutputType outputType, string targetFilename, HierarchicalNumber? upToTask, bool useSpecialSolution)
         {
             var doc = new TMLDocument(File.ReadAllText(file.FullName));
             if (doc.GetSnippetCount() == 0)
@@ -88,7 +88,7 @@ namespace SourceCodePreparer
 
             System.IO.File.WriteAllText(targetFilename, string.Empty);
             using (Stream output = new FileStream(targetFilename, FileMode.Open))
-                doc.TransformDocument(output, outputType, upToTask);
+                doc.TransformDocument(output, outputType, upToTask, useSpecialSolution);
 
             return true;
         }

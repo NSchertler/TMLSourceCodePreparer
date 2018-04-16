@@ -1,4 +1,7 @@
-Preparing source code for student tasks can tedious because the source code has to be maintained in many different versions (student version, solution, potentially for multiple interdepending tasks).
+TML Source Code Preparer
+==
+
+Preparing source code for student tasks can be tedious because the source code has to be maintained in many different versions (student version, solution, potentially for multiple interdepending tasks).
 The TML source code preparer allows you to maintain all possible versions within a single valid and functional source code file.
 The idea is to augment the source code with XML-like annotations that let you activate and deactivate parts of the code.
 At this point, the source code preparer supports all C-like languages.

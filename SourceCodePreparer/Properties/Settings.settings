@@ -3,7 +3,7 @@
   <Profiles />
   <Settings>
     <Setting Name="Filter" Type="System.String" Scope="User">
-      <Value Profile="(Default)">.c .cpp .cxx .h .hpp .hxx .glsl .vert .frag .geom .tcs .tes</Value>
+      <Value Profile="(Default)">.c .cpp .cxx .h .hpp .hxx .glsl .vert .frag .geom .glvs .glgs .glfs .tcs .tes</Value>
     </Setting>
   </Settings>
 </SettingsFile>

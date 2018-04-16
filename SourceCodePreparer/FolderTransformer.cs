@@ -37,6 +37,8 @@ namespace SourceCodePreparer
                 if (externalFolder == null)
                     throw new NullReferenceException("No output folder is provided for transformation.");
                 externalDir = new DirectoryInfo(externalFolder);
+                if (externalDir.FullName == dir.FullName)
+                    throw new ArgumentException("The source and target directories cannot be the same.");                
                 externalDir.Create();
             } 
 
@@ -85,10 +87,16 @@ namespace SourceCodePreparer
 
             if (outputType == TMLOutputType.Solution && doc.GetSnippetCountForTask(upToTask) == 0)
                 return false;
-
-            System.IO.File.WriteAllText(targetFilename, string.Empty);
-            using (Stream output = new FileStream(targetFilename, FileMode.Open))
-                doc.TransformDocument(output, outputType, upToTask, useSpecialSolution);
+            
+            using (var ms = new MemoryStream())
+            {
+                //Construct the new file first. Then, if no errors occured, write the file.
+                doc.TransformDocument(ms, outputType, upToTask, useSpecialSolution);
+                ms.Seek(0, SeekOrigin.Begin);
+                System.IO.File.WriteAllText(targetFilename, string.Empty);
+                using (var fs = new FileStream(targetFilename, FileMode.OpenOrCreate))
+                    ms.CopyTo(fs);                    
+            }
 
             return true;
         }

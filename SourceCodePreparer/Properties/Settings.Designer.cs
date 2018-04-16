@@ -25,7 +25,7 @@ namespace SourceCodePreparer.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute(".c .cpp .cxx .h .hpp .hxx .glsl .vert .frag .geom .tcs .tes")]
+        [global::System.Configuration.DefaultSettingValueAttribute(".c .cpp .cxx .h .hpp .hxx .glsl .vert .frag .geom .glvs .glgs .glfs .tcs .tes")]
         public string Filter {
             get {
                 return ((string)(this["Filter"]));

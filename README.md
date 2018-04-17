@@ -16,7 +16,7 @@ This program is still in beta status.
 No guarantees can be made.
 All modified files will be backed up before changes are made.
 
-The most recent build can be accessed through [releases](NSchertler/TMLSourceCodePreparer/releases/latest).
+The most recent build can be accessed through [releases](http://github.com/NSchertler/TMLSourceCodePreparer/releases/latest).
 
 Example
 --

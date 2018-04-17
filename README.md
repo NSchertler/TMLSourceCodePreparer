@@ -1,6 +1,8 @@
 TML Source Code Preparer
 ==
 
+[![Build status](https://ci.appveyor.com/api/projects/status/c3kga7i87nv5qios?svg=true)](https://ci.appveyor.com/project/NSchertler/tmlsourcecodepreparer)
+
 Preparing source code for student tasks can be tedious because the source code has to be maintained in many different versions (student version, solution, potentially for multiple interdepending tasks).
 The TML source code preparer allows you to maintain all possible versions within a single valid and functional source code file.
 The idea is to augment the source code with XML-like annotations that let you activate and deactivate parts of the code.
@@ -13,6 +15,8 @@ Feedback will be greatly appreciated.
 This program is still in beta status.
 No guarantees can be made.
 All modified files will be backed up before changes are made.
+
+The most recent build can be accessed through [releases](releases).
 
 Example
 --

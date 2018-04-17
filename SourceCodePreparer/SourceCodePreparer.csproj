@@ -6,7 +6,7 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{4F41EBA0-24A4-475F-ABEF-BD455C50F993}</ProjectGuid>
     <OutputType>WinExe</OutputType>
-    <RootNamespace>SourceCodePreparer</RootNamespace>
+    <RootNamespace>TML</RootNamespace>
     <AssemblyName>TML Source Code Preparer</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
@@ -70,6 +70,7 @@
     <Compile Include="SubSnippetAttribute.cs" />
     <Compile Include="TMLDocument.cs" />
     <Compile Include="TMLSyntaxTree.cs" />
+    <Compile Include="TransformationException.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

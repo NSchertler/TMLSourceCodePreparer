@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace SourceCodePreparer.Properties {
+namespace TML.Properties {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]

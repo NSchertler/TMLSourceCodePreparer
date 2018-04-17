@@ -18,14 +18,18 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace SourceCodePreparer
-{
-    /// <summary>
-    /// Interaktionslogik für MainWindow.xaml
-    /// </summary>
+namespace TML
+{    
     public partial class MainWindow : Window
     {
+        /// <summary>
+        /// The view model that controls the application
+        /// </summary>
         MainViewModel vm;
+
+        /// <summary>
+        /// We use one transformer object throughout the runtime of the application.
+        /// </summary>
         FolderTransformer transformer = new FolderTransformer();
 
         public MainWindow()
@@ -36,28 +40,31 @@ namespace SourceCodePreparer
             vm.BackupFolder = transformer.BackupFolder;            
         }
 
-        private void ChooseSourceFolder(object sender, RoutedEventArgs e)
+        /// <summary>
+        /// Opens a folder dialog and calls the callback function with the result.
+        /// </summary>
+        /// <param name="folderAction">This action is called with the picked folder when the dialog is closed. If the
+        /// folder dialog is canceled, this callback is not called.</param>
+        private void ChooseFolder(Action<string> folderAction)
         {
             using (var dialog = new CommonOpenFileDialog())
             {
                 dialog.IsFolderPicker = true;
                 dialog.EnsurePathExists = true;
-                var result = dialog.ShowDialog(this);
-                if (result == CommonFileDialogResult.Ok)
-                    vm.SourceFolder = dialog.FileName;
+                var dialogResult = dialog.ShowDialog(this);
+                if (dialogResult == CommonFileDialogResult.Ok)
+                    folderAction(dialog.FileName);
             }
+        }
+
+        private void ChooseSourceFolder(object sender, RoutedEventArgs e)
+        {
+            ChooseFolder(folder => vm.SourceFolder = folder);
         }
 
         private void ChooseTargetFolder(object sender, RoutedEventArgs e)
         {
-            using (var dialog = new CommonOpenFileDialog())
-            {
-                dialog.IsFolderPicker = true;
-                dialog.EnsurePathExists = true;
-                var result = dialog.ShowDialog(this);
-                if (result == CommonFileDialogResult.Ok)
-                    vm.TargetFolder = dialog.FileName;
-            }
+            ChooseFolder(folder => vm.TargetFolder = folder);            
         }
 
         private void Transform(object sender, RoutedEventArgs e)

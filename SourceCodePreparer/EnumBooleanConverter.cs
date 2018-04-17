@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Data;
 
-namespace SourceCodePreparer
+namespace TML
 {
     //Source: https://stackoverflow.com/a/406798/1210053
     public class EnumBooleanConverter : IValueConverter

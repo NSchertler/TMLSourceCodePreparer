@@ -7,8 +7,11 @@ using System.Threading.Tasks;
 using System.Windows.Controls;
 using System.Windows.Data;
 
-namespace SourceCodePreparer
+namespace TML
 {
+    /// <summary>
+    /// Converter for <see cref="HierarchicalNumber"/> and its string representation.
+    /// </summary>
     public class HierarchicalNumberConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
@@ -20,7 +23,9 @@ namespace SourceCodePreparer
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (value == "")
+            var strValue = value as string;
+
+            if (strValue == null || strValue == "")
                 return null;
             try
             {

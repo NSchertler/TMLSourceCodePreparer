@@ -5,22 +5,45 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace SourceCodePreparer
+namespace TML
 {
+    /// <summary>
+    /// Represents an immutable hierarchical integer number with up to three levels in the form Major.Minor.SubMinor
+    /// </summary>
     public struct HierarchicalNumber
     {
+        /// <summary>
+        /// Returns the Major part of the number.
+        /// </summary>
         public int Major { get; private set; }
+
+        /// <summary>
+        /// Returns the Minor part of the number or <c>null</c> if the number does not contain this level.
+        /// </summary>
         public int? Minor { get; private set; }
+
+        /// <summary>
+        /// Returns the SubMinor part of the number or <c>null</c>  if the number does not contain this level.
+        /// </summary>
         public int? SubMinor { get; private set; }
 
+        /// <summary>
+        /// Regular expression used for parsing
+        /// </summary>
         private static Regex parseRegex;
 
+        /// <summary>
+        /// Instantiates a hierarchical number with a given Major. Minor and SubMinor are set to <c>null</c>.
+        /// </summary>
         public HierarchicalNumber(int major)
         {
             Major = major;
             Minor = SubMinor = null;
         }
 
+        /// <summary>
+        /// Instantiates a hierarchical number with a given Major and Minor. SubMinor is set to <c>null</c>.
+        /// </summary>
         public HierarchicalNumber(int major, int? minor)
         {
             Major = major;
@@ -28,6 +51,9 @@ namespace SourceCodePreparer
             SubMinor = null;
         }
 
+        /// <summary>
+        /// Instantiates a hierarchical number with a given Major, Minor, and SubMinor.
+        /// </summary>        
         public HierarchicalNumber(int major, int? minor, int? subminor)
         {
             Major = major;
@@ -45,6 +71,10 @@ namespace SourceCodePreparer
                 return Major.ToString() + "." + Minor.ToString() + "." + SubMinor.ToString();
         }
 
+        /// <summary>
+        /// Parses a hierarchical number from its string representation.
+        /// </summary>
+        /// <exception cref="FormatException">Thrown if the provided string does not represent a hierarchical number.</exception>
         public static HierarchicalNumber ParseFromString(string input)
         {
             if(parseRegex == null)

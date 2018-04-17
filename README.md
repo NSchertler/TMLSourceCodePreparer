@@ -37,7 +37,7 @@ Let us assume the student's task is to implement a C++ function that calculates 
 		return 0;
 	}
 	
-The corresponding solution could like like this:
+The corresponding solution could look like this:
 
 	#include <iostream>
 
@@ -58,22 +58,22 @@ The corresponding solution could like like this:
 Instead of maintaining two separate versions, TML allows you to have both parts within a single file:
 
 	#include <iostream>
-
-	//<snippet task="1">
-	//<student>
-	////Task: Implement factorial
-	//return 0;
-	//</student>
-	//<solution>
+	
 	long long int factorial(int n)
 	{
+		//<snippet task="1">
+		//<student>
+		////Task: Implement factorial
+		//return 0;
+		//</student>
+		//<solution>
 		if(n <= 1)
 			return 1;
 		else
 			return n * factorial(n - 1);
+		//</solution>
+		//</snippet>
 	}
-	//</solution>
-	//</snippet>
 
 	int main()
 	{

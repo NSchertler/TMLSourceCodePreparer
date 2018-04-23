@@ -80,7 +80,7 @@ Instead of maintaining two separate versions, TML allows you to have both parts 
 		std::cout << factorial(10) << std::endl;
 		return 0;
 	}
-The variable part is encapsulated between `<solution></solution>` tags and the student solution is currently commented out.
+The variable part is encapsulated between `<snippet></snippet>` tags and the student solution is currently commented out.
 Hence, the file can still be compiled with a standard C++ compiler and represents the solution version.
 TML allows you to quickly switch between versions (by altering the commenting) and to generate clean source files for distribution.
 

@@ -83,6 +83,7 @@ namespace TML
                 {
                     targetFilename = newPath.Replace(dir.FullName, externalDir.FullName);
                     var targetFile = new FileInfo(targetFilename);
+                    Directory.CreateDirectory(Path.GetDirectoryName(targetFile.FullName));
                     if (targetFile.Exists)
                         targetFile.Delete();
                 }
